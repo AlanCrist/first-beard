@@ -97,7 +97,7 @@ class AppointmentController {
             { locale: pt }
         );
 
-        const user = User.findByPk(req.userId);
+        const user = await User.findByPk(req.userId);
 
         await Notification.create({
             content: `Novo agendamento de ${user.name} para o ${formattedDate}`,
@@ -108,7 +108,15 @@ class AppointmentController {
     }
 
     async delete(req, res) {
-        const appointment = Appointment.findByPk(req.params.id);
+        const appointment = await Appointment.findByPk(req.params.id, {
+            include: [
+                {
+                    model: User,
+                    as: "provider",
+                    attributes: ["name", "email"]
+                }
+            ]
+        });
 
         if (appointment.user_id !== req.userId) {
             return res.status(401).json({
